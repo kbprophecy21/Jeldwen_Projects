@@ -11,13 +11,14 @@ class EffDataTableGUI:
         self.filter_on = False
         self.data_manager = DataManager()
         self.data_frame = None
+        self.tree = None
         
         
     
     def toggle_filter(self, tree, filter_btn):
         self.filter_on = not self.filter_on
         filter_btn.config(text=f"Filter Images: {'ON' if self.filter_on else 'OFF'}")
-        self.populate_tree(tree)
+        self.populate_tree(self.tree)
     
     
     def back_to_menu(self, frame):
@@ -26,15 +27,15 @@ class EffDataTableGUI:
     
     
     def populate_tree(self, tree):
-        for row in tree.get_children():
-            tree.delete(row)
+        for row in self.tree.get_children():
+            self.tree.delete(row)
         data = self.data_manager.get_all()
         items = data.items()
         if self.filter_on:
             items = filter(lambda kv: kv[1] > 0, items)
         for idx, (key, value) in enumerate(items):
             tag = "evenrow" if idx % 2 == 0 else "oddrow"
-            tree.insert("", "end", values=(key, value), tags=(tag,))   
+            self.tree.insert("", "end", values=(key, value), tags=(tag,))   
      
      
         
@@ -50,8 +51,26 @@ class EffDataTableGUI:
 
         tk.Label(header_frame, text="EFF Scanned Data:", bg="#1d446b", fg="white", font=("Arial", 14)).pack(side="left", padx=10, pady=10)
         tk.Button(header_frame, text="Back to the main menu", command=lambda: self.back_to_menu(self.data_frame)).pack(side="right", padx=10, pady=10)
-        filter_btn = tk.Button(header_frame, text="Filter Images: OFF", command=lambda: self.toggle_filter(tree, filter_btn))
+
+        # Placeholders, so we can reference them before they exist
+        self.tree = None  # will be set later
+        filter_btn = None
+
+        # Use local function so we can refresh tree from buttons
+        def toggle_filter():
+            self.filter_on = not self.filter_on
+            filter_btn.config(text=f"Filter Images: {'ON' if self.filter_on else 'OFF'}")
+            self.populate_tree(self.tree)
+
+        def refresh_table():
+            self.populate_tree(self.tree)
+
+        # Buttons
+        filter_btn = tk.Button(header_frame, text="Filter Images: OFF", command=toggle_filter)
         filter_btn.pack(side="right", padx=10, pady=10)
+
+        refresh_btn = tk.Button(header_frame, text="Refresh", command=refresh_table)
+        refresh_btn.pack(side="right", padx=10, pady=10)
 
         tree_frame = tk.Frame(self.data_frame)
         tree_frame.pack(pady=5, fill="both", expand=True)
@@ -61,18 +80,19 @@ class EffDataTableGUI:
         x_scroll = tk.Scrollbar(tree_frame, orient="horizontal")
         x_scroll.pack(side="bottom", fill="x")
 
-        tree = ttk.Treeview(tree_frame, columns=("Key", "Value"), show="headings",
-                            yscrollcommand=y_scroll.set, xscrollcommand=x_scroll.set, height=20)
-        tree.heading("Key", text="Key")
-        tree.heading("Value", text="Value")
-        tree.column("Key", width=120, anchor="center")
-        tree.column("Value", width=80, anchor="center")
-        tree.pack(fill="both", expand=True)
+        self.tree = ttk.Treeview(tree_frame, columns=("Key", "Value"), show="headings",
+                         yscrollcommand=y_scroll.set, xscrollcommand=x_scroll.set, height=20)
+        self.tree.heading("Key", text="Key")
+        self.tree.heading("Value", text="Value")
+        self.tree.column("Key", width=120, anchor="center")
+        self.tree.column("Value", width=80, anchor="center")
+        self.tree.pack(fill="both", expand=True)
 
-        y_scroll.config(command=tree.yview)
-        x_scroll.config(command=tree.xview)
+        y_scroll.config(command=self.tree.yview)
+        x_scroll.config(command=self.tree.xview)
 
-        self.populate_tree(tree)
+        self.populate_tree(self.tree)
 
-        tree.tag_configure("evenrow", background="#e0e0e0")
-        tree.tag_configure("oddrow", background="#f5f5f5")
+        self.tree.tag_configure("evenrow", background="#e0e0e0")
+        self.tree.tag_configure("oddrow", background="#f5f5f5")
+

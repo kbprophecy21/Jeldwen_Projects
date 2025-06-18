@@ -11,8 +11,9 @@ class ScannedTicketTable:
         self.on_update_callback = on_update_callback
         self.on_delete_callback = on_delete_callback
         self.frame = None  
+        self.tree = None
 
-    def refresh_table(self):
+    def refresh_table(self): 
         if not self.tree:
             return
         for row in self.tree.get_children():
@@ -22,7 +23,11 @@ class ScannedTicketTable:
                 ticket.get("batch_id", ""),
                 ticket.get("frame_code", ""),
                 ticket.get("door_size", ""),
-                ticket.get("quantity", "")
+                ticket.get("quantity", ""),
+                ticket.get("product_type", ""),
+                ticket.get("operator", ""),
+                ticket.get("material", ""),
+                ticket.get("scan_time", "")
             ))
 
     def on_double_click(self, event):
@@ -47,10 +52,19 @@ class ScannedTicketTable:
         def save_edit(event):
             try:
                 new_quantity = int(entry.get())
-                self.scanned_tickets[int(row_id)]["quantity"] = new_quantity
+                idx = int(row_id)
+
+                updated_ticket = self.scanned_tickets[idx].copy()
+                updated_ticket["quantity"] = new_quantity
+
+                self.data_manager.update_ticket(idx, updated_ticket)
+                self.scanned_tickets[idx] = updated_ticket
+
                 if self.on_update_callback:
-                    self.on_update_callback(self.scanned_tickets[int(row_id)])
+                    self.on_update_callback(updated_ticket)
+
                 self.refresh_table()
+
             except ValueError:
                 messagebox.showerror("Invalid Input", "Quantity must be a number.")
             finally:
@@ -63,12 +77,20 @@ class ScannedTicketTable:
         selected_item = self.tree.selection()
         if selected_item:
             idx = int(selected_item[0])
-            ticket = self.scanned_tickets.pop(idx)
+
+            # Remove from DataManager (totals + history)
+            self.data_manager.delete_ticket(idx)
+
+            # Remove from visual/local table
+            self.scanned_tickets.pop(idx)
+
             if self.on_delete_callback:
-                self.on_delete_callback(ticket)
+                self.on_delete_callback(idx)
+
             self.refresh_table()
         else:
             messagebox.showinfo("No selection", "Please select a ticket to delete.")
+
 
     def back_to_menu(self):
         if self.frame:
@@ -89,20 +111,31 @@ class ScannedTicketTable:
         tk.Label(header_frame, text="Previously Scanned Tickets:", bg="#1d446b", fg="white", font=("Arial", 14)).pack(side="left", padx=10, pady=10)
         tk.Button(header_frame, text="Back to Main Menu", command=self.back_to_menu).pack(side="right", padx=10)
 
-        # Treeview
+        # Treeview with extended fields
         self.tree = ttk.Treeview(
             self.frame,
-            columns=("batch_id", "frame_code", "door_size", "quantity"),
+            columns=("batch_id", "frame_code", "door_size", "quantity", "product_type", "operator", "material", "scan_time"),
             show="headings"
         )
+
         self.tree.heading("batch_id", text="Batch ID")
         self.tree.heading("frame_code", text="Frame Code")
         self.tree.heading("door_size", text="Door Size")
         self.tree.heading("quantity", text="Quantity")
-        self.tree.column("batch_id", width=120)
-        self.tree.column("frame_code", width=100)
-        self.tree.column("door_size", width=100)
+        self.tree.heading("product_type", text="Product Type")
+        self.tree.heading("operator", text="Operator")
+        self.tree.heading("material", text="Material")
+        self.tree.heading("scan_time", text="Scan Time")
+
+        self.tree.column("batch_id", width=100)
+        self.tree.column("frame_code", width=90)
+        self.tree.column("door_size", width=90)
         self.tree.column("quantity", width=80)
+        self.tree.column("product_type", width=110)
+        self.tree.column("operator", width=90)
+        self.tree.column("material", width=90)
+        self.tree.column("scan_time", width=140)
+
         self.tree.pack(fill="both", expand=True)
 
         # Buttons

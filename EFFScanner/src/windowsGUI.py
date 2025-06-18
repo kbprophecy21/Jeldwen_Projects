@@ -5,15 +5,20 @@ from dataManager import DataManager
 from effscanner import EFFScanner
 from ScannedTicketTable import ScannedTicketTable
 from effDataTableGUI import EffDataTableGUI
+from config_manager import ConfigManager
+from datetime import datetime
+
 
 class EFFApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Jeldwen EFF Scanner")
         self.root.configure(bg="#00406b")
+        
+        self.config = ConfigManager()
 
         # Jeldwen Logo -----------------------------------# 
-        self.logo_img = PhotoImage(file=r"C:\Users\14704\OneDrive\Desktop\All Projects\Wild_Projects\Jeldwen_Projects\Jeldwen_Projects\EFFScanner\Data\img\JeldwenLogo.png")
+        self.logo_img = PhotoImage(file=self.config.image_path)  # Load the logo image from the config path
         logo_label = tk.Label(self.root, image=self.logo_img, bg="#f5f5f5")
         logo_label.pack(pady=10)
         #--------------------------------------------------#
@@ -32,6 +37,7 @@ class EFFApp:
         # Help Menu -----------------------------------#
         help_menu = tk.Menu(menubar, tearoff=0)
         help_menu.add_command(label="About", command=lambda: tk.messagebox.showinfo("About", "Jeldwen EFF Scanner GUI v1.0\n by Kyle Brewer \nSoftware Engineer"))
+        help_menu.add_command(label="Settings", command=self.open_settings)
         menubar.add_cascade(label="Help", menu=help_menu)
         self.root.config(menu=menubar)
         #--------------------------------------------------#
@@ -40,8 +46,15 @@ class EFFApp:
 
         self.scanned_tickets = [] 
         self.effDataTable = EffDataTableGUI(self.root, self.startup_frame) # Initialize the EffDataTableGUI for displaying EFF data
-        self.scannedTicketTable = ScannedTicketTable(self.root, self.startup_frame, self.scanned_tickets)
         
+        self.scannedTicketTable = ScannedTicketTable(
+        self.root,
+        self.startup_frame,
+        self.scanned_tickets,
+        on_update_callback=lambda ticket: self.effDataTable.populate_tree(self.effDataTable.tree),
+        on_delete_callback=lambda idx: self.effDataTable.populate_tree(self.effDataTable.tree)
+        )
+         
         self.table_page = None
         self.ticket_table = None
 
@@ -54,6 +67,11 @@ class EFFApp:
         
         self.scan_frame = None
         self.data_frame = None
+        
+        
+    def open_settings(self):
+        config = ConfigManager()
+        config.launch_gui()
 
     def show_scan_ui(self):
         self.startup_frame.pack_forget()
@@ -77,33 +95,45 @@ class EFFApp:
         self.total_label = tk.Label(self.scan_frame, text=f"Total: {total}", bg="#1d446b", fg="yellow", font=("Arial", 12, "bold"))
         self.total_label.pack(pady=(10, 0))
 
+    
+
     def scan_ticket(self):
         batch_id = self.entry.get().strip()
         if not batch_id:
             self.status.config(text="Please enter a schedule batch.", fg="red")
             return
 
-        folder_path = r"C:\Users\14704\OneDrive\Desktop\All Projects\Wild_Projects\Jeldwen_Projects\Jeldwen_Projects\EFFScanner\Data\LIS_Files"
+        folder_path = self.config.data_folder
+        if not folder_path:
+            messagebox.showerror("Error", "Data folder path is not set. Please configure it in the settings.")
+            return
+
         scanner = EFFScanner(folder_path, batch_id)
         scanner.find_ticket()
-        df = scanner.get_ticket_data()
 
-        if not df.empty:
+        extended_df = scanner.get_extended_data()
+        if not extended_df.empty:
             updated_keys = []
-            for _, row in df.iterrows():
+            for _, row in extended_df.iterrows():
                 try:
-                    quantity = int(row["door_quantity"])
+                    quantity = int(row["quantity"])
                 except Exception:
                     quantity = 1
 
-                frame_code = row["door_frame_code"]
+                frame_code = row["frame_code"]
                 door_size = row["door_size"]
+
+                ticket = row.to_dict()
+                ticket["batch_id"] = batch_id
+                ticket["quantity"] = quantity
+                ticket["scan_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+                self.data_manager.add_ticket(ticket)      # save full data + categorize
+                self.scanned_tickets.append(ticket)       # used by the table GUI
 
                 key = self.data_manager.categorize_ticket(frame_code, door_size, quantity)
                 if key:
-                    self.data_manager.set_value(key, quantity)
                     updated_keys.append(f"{key} (+{quantity})")
-                    self.scanned_tickets.append({"batch_id": batch_id, "frame_code": frame_code, "door_size": door_size, "quantity": quantity, "key": key})
 
             keys_str = ", ".join(updated_keys)
             self.status.config(text=f"✅ Ticket(s) processed.\nUpdated: {keys_str}", fg="green")
@@ -113,6 +143,7 @@ class EFFApp:
         self.entry.delete(0, tk.END)
         self.entry.focus()
         self.total_label.config(text=f"Total Doors: {self.data_manager.get_total()}")
+
 
   
     def reset_eff_data(self):
