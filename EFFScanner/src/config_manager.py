@@ -11,9 +11,14 @@ class ConfigManager:
         #default_data_folder = os.path.join(os.getcwd(), "Data", "lis")
         #default_json_path = os.path.join(os.getcwd(), "Data", "eff_data.json")
         default_image_path = os.path.join(os.getcwd(), "Data", "img", "JeldwenLogo.png")
+        
+        with open("./Data/defaultTesting_config.json", "r") as file:
+            config = json.load(file)
+        self.data_path1 = config["DATA_FILE_PATH"]
+        self.data_path2 = config["SAVED_FILE_PATH"]
 
-        self.data_folder = r"C:\Users\14704\OneDrive\Desktop\All Projects\Wild_Projects\Jeldwen_Projects\EFFScanner\Data\LIS_Files"
-        self.json_save_path = r"C:\Users\14704\OneDrive\Desktop\All Projects\Wild_Projects\Jeldwen_Projects\EFFScanner\Data\eff_saved_data.json"
+        self.data_folder = r'{self.data_path1}'
+        self.json_save_path = r'{self.data_path2}'
         self.image_path = default_image_path
 
        # self.load_config()
@@ -27,6 +32,11 @@ class ConfigManager:
     #     else:
     #         self.save_config()  # Create config with defaults
     # """
+    
+    def jsonDefaltConfig(self):
+        with open("./Data/defalutTesting_config.json", "r") as file:
+            config = json.load(file)
+            
     def save_config(self):
         config = {
             "data_folder": self.data_folder,
