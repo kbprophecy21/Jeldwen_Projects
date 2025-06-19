@@ -18,7 +18,7 @@ class EFFApp:
         self.config = ConfigManager()
 
         # Jeldwen Logo -----------------------------------# 
-        self.logo_img = PhotoImage(file=self.config.image_path)  # Load the logo image from the config path
+        self.logo_img = PhotoImage(file=self.config.default_image_path)  # Load the logo image from the config path
         logo_label = tk.Label(self.root, image=self.logo_img, bg="#f5f5f5")
         logo_label.pack(pady=10)
         #--------------------------------------------------#
@@ -70,8 +70,8 @@ class EFFApp:
         
         
     def open_settings(self):
-        config = ConfigManager()
-        config.launch_gui()
+        self.config = ConfigManager()
+        self.config.launch_gui()
 
     def show_scan_ui(self):
         self.startup_frame.pack_forget()

@@ -6,7 +6,7 @@ class DataManager:
     def __init__(self):
         self.config = ConfigManager()
         self.DATA_FILE = self.config.json_save_path
-        self.HISTORY_FILE = self.DATA_FILE.replace(".json", "_scanned_tickets.json")
+        self.HISTORY_FILE = self.DATA_FILE.replace(".json", "history_scanned_tickets.json")
 
         # Initialize category totals
         keys = [

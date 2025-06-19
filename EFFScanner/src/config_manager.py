@@ -10,16 +10,11 @@ class ConfigManager:
         # Default fallback values
         #default_data_folder = os.path.join(os.getcwd(), "Data", "lis")
         #default_json_path = os.path.join(os.getcwd(), "Data", "eff_data.json")
-        default_image_path = os.path.join(os.getcwd(), "Data", "img", "JeldwenLogo.png")
-        
-        # Make sure this path matches your actual file location
-        with open("./defaultTesting_config.json", "r") as file:
-            config = json.load(file)
-        self.data_folder = config["DATA_FILE_PATH"]
-        self.json_save_path = config["SAVED_FILE_PATH"]
-        self.image_path = default_image_path
+        self.default_image_path = r'C:\Users\410512\Documents\Project_Files\Jeldwen_Projects\EFFScanner\Data\img\JeldwenLogo.png'
+        self.json_save_path = r'C:\Users\410512\Documents\Project_Files\Jeldwen_Projects\EFFScanner\Data\eff_saved_data.json'
+        self.data_folder = r'C:\Users\410512\Documents\Project_Files\Jeldwen_Projects\EFFScanner\Data\LIS_Files'
 
-       # self.load_config()
+        #load_config()
     # """
     # def load_config(self):
     #     if os.path.exists(CONFIG_FILE):
@@ -31,9 +26,7 @@ class ConfigManager:
     #         self.save_config()  # Create config with defaults
     # """
     
-    def jsonDefaltConfig(self):
-        with open("./Data/defalutTesting_config.json", "r") as file:
-            config = json.load(file)
+   
             
     def save_config(self):
         config = {
