@@ -12,13 +12,11 @@ class ConfigManager:
         #default_json_path = os.path.join(os.getcwd(), "Data", "eff_data.json")
         default_image_path = os.path.join(os.getcwd(), "Data", "img", "JeldwenLogo.png")
         
-        with open("./Data/defaultTesting_config.json", "r") as file:
+        # Make sure this path matches your actual file location
+        with open("./defaultTesting_config.json", "r") as file:
             config = json.load(file)
-        self.data_path1 = config["DATA_FILE_PATH"]
-        self.data_path2 = config["SAVED_FILE_PATH"]
-
-        self.data_folder = r'{self.data_path1}'
-        self.json_save_path = r'{self.data_path2}'
+        self.data_folder = config["DATA_FILE_PATH"]
+        self.json_save_path = config["SAVED_FILE_PATH"]
         self.image_path = default_image_path
 
        # self.load_config()
