@@ -111,7 +111,7 @@ class EFFApp:
         scanner = EFFScanner(folder_path, batch_id)
         scanner.find_ticket()
 
-        extended_df = scanner.get_extended_data()
+        extended_df = scanner.get_tickets()
         if not extended_df.empty:
             updated_keys = []
             for _, row in extended_df.iterrows():
