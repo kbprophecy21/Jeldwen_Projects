@@ -179,3 +179,18 @@ class DataManager:
             key += " 8/0"
 
         return key
+
+    def scan_tickets(self, scanner):
+        for _, row in scanner.get_tickets().iterrows():
+            quantity = int(row["quantity"])
+            door_size = row["door_size"]
+            frame_code = row["frame_code"]
+
+            if frame_code and door_size:
+                key = self.categorize_ticket(frame_code, door_size, quantity)
+                if key:
+                    self.set_value(key, quantity)
+
+            self.ticket_history.append(row.to_dict())
+
+        self.save_data()
