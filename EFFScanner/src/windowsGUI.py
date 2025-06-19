@@ -45,7 +45,7 @@ class EFFApp:
         self.data_manager = DataManager() # Initialize the DataManager so it can be used throughout the app
 
         self.scanned_tickets = [] 
-        self.effDataTable = EffDataTableGUI(self.root, self.startup_frame) # Initialize the EffDataTableGUI for displaying EFF data
+        self.effDataTable = EffDataTableGUI(self.root, self.startup_frame, self.data_manager) # Initialize the EffDataTableGUI for displaying EFF data
         
         self.scannedTicketTable = ScannedTicketTable(
         self.root,

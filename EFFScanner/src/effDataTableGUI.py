@@ -5,11 +5,11 @@ from effscanner import EFFScanner
 
 
 class EffDataTableGUI:
-    def __init__(self, root, startup_frame):
+    def __init__(self, root, startup_frame, data_manager):
         self.root = root
         self.startup_frame = startup_frame
         self.filter_on = False
-        self.data_manager = DataManager()
+        self.data_manager = data_manager  # Use the passed-in instance
         self.data_frame = None
         self.tree = None
         
