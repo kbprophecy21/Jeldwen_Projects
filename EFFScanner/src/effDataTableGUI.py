@@ -12,20 +12,16 @@ class EffDataTableGUI:
         self.data_manager = data_manager  # Use the passed-in instance
         self.data_frame = None
         self.tree = None
-        
-        
-    
+
     def toggle_filter(self, tree, filter_btn):
         self.filter_on = not self.filter_on
         filter_btn.config(text=f"Filter Images: {'ON' if self.filter_on else 'OFF'}")
         self.populate_tree(self.tree)
-    
-    
+
     def back_to_menu(self, frame):
         frame.pack_forget()
-        self.startup_frame.pack(padx=20, pady=20)   
-    
-    
+        self.startup_frame.pack(padx=20, pady=20)
+
     def populate_tree(self, tree):
         for row in self.tree.get_children():
             self.tree.delete(row)
@@ -35,10 +31,12 @@ class EffDataTableGUI:
             items = filter(lambda kv: kv[1] > 0, items)
         for idx, (key, value) in enumerate(items):
             tag = "evenrow" if idx % 2 == 0 else "oddrow"
-            self.tree.insert("", "end", values=(key, value), tags=(tag,))   
-     
-     
-        
+            self.tree.insert("", "end", values=(key, value), tags=(tag,))
+
+    def refresh_if_visible(self):
+        if self.tree:
+            self.populate_tree(self.tree)
+
     def show_data_ui(self):
         self.startup_frame.pack_forget()
         if self.data_frame:
@@ -52,11 +50,10 @@ class EffDataTableGUI:
         tk.Label(header_frame, text="EFF Scanned Data:", bg="#1d446b", fg="white", font=("Arial", 14)).pack(side="left", padx=10, pady=10)
         tk.Button(header_frame, text="Back to the main menu", command=lambda: self.back_to_menu(self.data_frame)).pack(side="right", padx=10, pady=10)
 
-        # Placeholders, so we can reference them before they exist
-        self.tree = None  # will be set later
+        # Placeholders
+        self.tree = None
         filter_btn = None
 
-        # Use local function so we can refresh tree from buttons
         def toggle_filter():
             self.filter_on = not self.filter_on
             filter_btn.config(text=f"Filter Images: {'ON' if self.filter_on else 'OFF'}")
@@ -81,7 +78,7 @@ class EffDataTableGUI:
         x_scroll.pack(side="bottom", fill="x")
 
         self.tree = ttk.Treeview(tree_frame, columns=("Key", "Value"), show="headings",
-                         yscrollcommand=y_scroll.set, xscrollcommand=x_scroll.set, height=20)
+                                 yscrollcommand=y_scroll.set, xscrollcommand=x_scroll.set, height=20)
         self.tree.heading("Key", text="Key")
         self.tree.heading("Value", text="Value")
         self.tree.column("Key", width=120, anchor="center")
@@ -95,4 +92,3 @@ class EffDataTableGUI:
 
         self.tree.tag_configure("evenrow", background="#e0e0e0")
         self.tree.tag_configure("oddrow", background="#f5f5f5")
-

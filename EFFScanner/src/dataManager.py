@@ -6,9 +6,17 @@ class DataManager:
     def __init__(self):
         self.config = ConfigManager()
         self.DATA_FILE = self.config.json_save_path
-        self.HISTORY_FILE = self.DATA_FILE.replace(".json", "history_scanned_tickets.json")
 
-        # Initialize category totals
+        # Initialize structure
+        self.data = {
+            "category_totals": self._init_category_totals(),
+            "scanned_tickets": [],
+            "total_count": 0
+        }
+
+        self.load_data()
+
+    def _init_category_totals(self):
         keys = [
             "BF", "MC", "HC", "SC", "MS", "MC 8/0",
             "BF01", "MC01", "HC01", "SC01", "MS01", "MC01 8/0",
@@ -17,120 +25,112 @@ class DataManager:
             "BF15", "MC15", "HC15", "SC15", "MS15", "MC15 8/0",
             "BF20", "MC20", "HC20", "SC20", "MS20", "MC20 8/0"
         ]
-        self.data = {key: 0 for key in keys}
-        self.ticket_history = []
-
-        self.load_data()
+        return {key: 0 for key in keys}
 
     def add_ticket(self, ticket_dict):
         required_keys = ["quantity", "frame_code", "door_size"]
-        for k in required_keys:
-            if k not in ticket_dict:
-                print(f"Missing key in ticket: {k} -> {ticket_dict}")
-                return  # or raise an error
+        if not all(k in ticket_dict for k in required_keys):
+            print(f"Missing keys in ticket: {ticket_dict}")
+            return
 
-        quantity = int(ticket_dict.get("quantity", 1))
-        frame_code = ticket_dict.get("frame_code") or ticket_dict.get("frame_code")
-        door_size = ticket_dict.get("door_size")
+        quantity = int(ticket_dict["quantity"])
+        frame_code = ticket_dict["frame_code"]
+        door_size = ticket_dict["door_size"]
 
-        if frame_code and door_size:
-            key = self.categorize_ticket(frame_code, door_size, quantity)
-            if key:
-                self.set_value(key, quantity)
-        
-        self.ticket_history.append(ticket_dict)
+        key = self.categorize_ticket(frame_code, door_size, quantity)
+        if key:
+            self.set_value(key, quantity)
+
+        self.data["scanned_tickets"].append(ticket_dict)
+        self.data["total_count"] += quantity
         self.save_data()
 
-    def update_ticket(self, index, new_ticket):
-        old_ticket = self.ticket_history[index]
+    def delete_ticket_by_data(self, ticket_to_delete):
+        quantity = int(ticket_to_delete.get("quantity", 1))
+        frame_code = ticket_to_delete.get("frame_code")
+        door_size = ticket_to_delete.get("door_size")
+
+        key = self.categorize_ticket(frame_code, door_size, quantity)
+        if key:
+            self.set_value(key, -quantity)
+
+        self.data["scanned_tickets"] = [
+            t for t in self.data["scanned_tickets"]
+            if not (
+                t.get("batch_id") == ticket_to_delete.get("batch_id") and
+                t.get("item_number") == ticket_to_delete.get("item_number") and
+                t.get("scan_time") == ticket_to_delete.get("scan_time")
+            )
+        ]
+
+        self.data["total_count"] -= quantity
+        self.save_data()
+
+    def reprocess_ticket(self, old_ticket, new_ticket):
         old_quantity = int(old_ticket.get("quantity", 1))
-        old_frame_code = old_ticket.get("frame_code") or old_ticket.get("frame_code")
-        old_door_size = old_ticket.get("door_size")
-
-        if old_frame_code and old_door_size:
-            old_key = self.categorize_ticket(old_frame_code, old_door_size, old_quantity)
-            if old_key:
-                self.set_value(old_key, -old_quantity)
-
-        self.ticket_history[index] = new_ticket
+        old_key = self.categorize_ticket(old_ticket["frame_code"], old_ticket["door_size"], old_quantity)
+        if old_key:
+            self.set_value(old_key, -old_quantity)
 
         new_quantity = int(new_ticket.get("quantity", 1))
-        new_frame_code = new_ticket.get("frame_code") or new_ticket.get("frame_code")
-        new_door_size = new_ticket.get("door_size")
+        new_key = self.categorize_ticket(new_ticket["frame_code"], new_ticket["door_size"], new_quantity)
+        if new_key:
+            self.set_value(new_key, new_quantity)
 
-        if new_frame_code and new_door_size:
-            new_key = self.categorize_ticket(new_frame_code, new_door_size, new_quantity)
-            if new_key:
-                self.set_value(new_key, new_quantity)
+        for i, t in enumerate(self.data["scanned_tickets"]):
+            if (
+                t.get("batch_id") == old_ticket.get("batch_id") and
+                t.get("sequence_number") == old_ticket.get("sequence_number")
+            ):
+                self.data["scanned_tickets"][i] = new_ticket
+                break
 
-        self.save_data()
-
-    def delete_ticket(self, index):
-        ticket = self.ticket_history.pop(index)
-        quantity = int(ticket.get("quantity", 1))
-        frame_code = ticket.get("frame_code") or ticket.get("frame_code")
-        door_size = ticket.get("door_size")
-
-        if frame_code and door_size:
-            key = self.categorize_ticket(frame_code, door_size, quantity)
-            if key:
-                self.set_value(key, -quantity)
-
+        self.data["total_count"] += new_quantity - old_quantity
         self.save_data()
 
     def set_value(self, key, value):
-        if key in self.data and isinstance(value, (int, float)):
-            self.data[key] += value
+        if key in self.data["category_totals"] and isinstance(value, (int, float)):
+            self.data["category_totals"][key] += value
         else:
             raise KeyError(f"Invalid key or value type: {key}, {value}")
 
-    def get_value(self, key):
-        return self.data.get(key, None)
-
     def get_all(self):
-        return self.data.copy()
+        return self.data["category_totals"].copy()
 
     def get_total(self):
-        return sum(self.data.values())
+        return self.data["total_count"]
+
+    def get_ticket_history(self):
+        return self.data["scanned_tickets"].copy()
 
     def reset_data(self):
-        for key in self.data:
-            self.data[key] = 0
-        self.ticket_history.clear()
+        self.data["category_totals"] = self._init_category_totals()
+        self.data["scanned_tickets"] = []
+        self.data["total_count"] = 0
         self.save_data()
+        self.load_data()
 
     def save_data(self):
         with open(self.DATA_FILE, "w") as f:
-            json.dump(self.data, f)
-        with open(self.HISTORY_FILE, "w") as f:
-            json.dump(self.ticket_history, f, indent=4)
+            json.dump(self.data, f, indent=4)
 
     def load_data(self):
         if os.path.exists(self.DATA_FILE):
             with open(self.DATA_FILE, "r") as f:
                 self.data = json.load(f)
-        if os.path.exists(self.HISTORY_FILE):
-            with open(self.HISTORY_FILE, "r") as f:
-                self.ticket_history = json.load(f)
 
-    def get_ticket_history(self):
-        return self.ticket_history.copy()
+    # ---- Categorization Logic ---- #
 
-    # ----------------------------
-    # Category Rules
-    # ----------------------------
     def isDoorBifold(self, frame_code):
-        frame_letter = frame_code[2].upper()
-        return frame_letter in ["F", "J", "W"]
+        return frame_code[2].upper() in ["F", "J", "W"]
 
     def isDoorGreaterthan7ft(self, door_size):
         try:
             parts = door_size.upper().split('X')
             if len(parts) == 2:
-                height_str = parts[1].strip()
-                height = float(height_str)
+                height = float(parts[1].strip())
                 return height > 90.0
-        except Exception:
+        except:
             pass
         return False
 
@@ -179,18 +179,3 @@ class DataManager:
             key += " 8/0"
 
         return key
-
-    def scan_tickets(self, scanner):
-        for _, row in scanner.get_tickets().iterrows():
-            quantity = int(row["quantity"])
-            door_size = row["door_size"]
-            frame_code = row["frame_code"]
-
-            if frame_code and door_size:
-                key = self.categorize_ticket(frame_code, door_size, quantity)
-                if key:
-                    self.set_value(key, quantity)
-
-            self.ticket_history.append(row.to_dict())
-
-        self.save_data()

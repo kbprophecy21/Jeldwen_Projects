@@ -44,17 +44,17 @@ class EFFApp:
 
         self.data_manager = DataManager() # Initialize the DataManager so it can be used throughout the app
 
-        self.scanned_tickets = [] 
+        self.scanned_tickets = self.data_manager.get_ticket_history() 
         self.effDataTable = EffDataTableGUI(self.root, self.startup_frame, self.data_manager) # Initialize the EffDataTableGUI for displaying EFF data
-        
-        self.scannedTicketTable = ScannedTicketTable(
-        self.root,
-        self.startup_frame,
-        self.scanned_tickets,
-        on_update_callback=lambda ticket: self.effDataTable.populate_tree(self.effDataTable.tree),
-        on_delete_callback=lambda idx: self.effDataTable.populate_tree(self.effDataTable.tree)
-        )
          
+        self.scannedTicketTable = ScannedTicketTable(
+           self.root,
+            self.startup_frame,
+            self.data_manager,
+            on_update_callback=lambda ticket: self.effDataTable.refresh_if_visible(),
+            on_delete_callback=lambda ticket: self.effDataTable.refresh_if_visible()
+        )
+
         self.table_page = None
         self.ticket_table = None
 
@@ -94,8 +94,6 @@ class EFFApp:
         total = self.data_manager.get_total()
         self.total_label = tk.Label(self.scan_frame, text=f"Total: {total}", bg="#1d446b", fg="yellow", font=("Arial", 12, "bold"))
         self.total_label.pack(pady=(10, 0))
-
-    
 
     def scan_ticket(self):
         batch_id = self.entry.get().strip()
@@ -145,17 +143,29 @@ class EFFApp:
         self.total_label.config(text=f"Total Doors: {self.data_manager.get_total()}")
 
 
-  
     def reset_eff_data(self):
+        # Reset the underlying data
         self.data_manager.reset_data()
+
+        # Clear local scanned ticket list
+        self.scanned_tickets.clear()
+
+        # Refresh only if tree exists
+        if self.scannedTicketTable and self.scannedTicketTable.tree:
+            self.scannedTicketTable.refresh_table()
+
+        if self.effDataTable and self.effDataTable.tree:
+            self.effDataTable.populate_tree(self.effDataTable.tree)
+
+        # Reset label if it exists
         if hasattr(self, "total_label"):
             self.total_label.config(text=f"Total Doors: {self.data_manager.get_total()}")
 
+    # Function to go back to the main menu and destroy the current frame
     def back_to_menu(self, frame_to_destroy=None):
         if frame_to_destroy:
             frame_to_destroy.destroy()
         self.startup_frame.pack(padx=20, pady=20)
 
-        
     def run_app(self):
         self.root.mainloop()

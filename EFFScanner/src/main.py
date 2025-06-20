@@ -5,10 +5,10 @@ from windowsGUI import EFFApp
 import tkinter as tk
 
 
-
+ 
 
 def main():
-    root = tk.Tk()
+    root = tk.Tk() 
     app = EFFApp(root)
     app.run_app()
 

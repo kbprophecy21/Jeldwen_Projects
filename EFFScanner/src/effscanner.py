@@ -33,8 +33,8 @@ class EFFScanner:
                             fields = [field.strip('"') for field in fields]
                             ticket_data = {
                                 "batch_id": self.batch_id,
-                                "press_a": fields[1],
-                                "press_b": fields[2],
+                                "press_a": fields[3],
+                                "press_b": fields[4],
                                 "quantity": fields[5],
                                 "door_size": fields[7],
                                 "door_species": fields[8],
