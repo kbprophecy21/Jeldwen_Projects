@@ -1,0 +1,16 @@
+[
+    {
+        "batch_id": "0602250020001",
+        "record_id": "YF",
+        "press_a": "06/02/25",
+        "press_b": "",
+        "product_type": "0020",
+        "operator": "001",
+        "quantity": 10,
+        "material": "018.000 X 096.000",
+        "door_size": "018.000 X 096.000",
+        "frame_code": "G70JS0",
+        "scan_time": "2025-06-19 03:38:29",
+        "original_line": "\"YF\",06/02/25,\"\",\"0020\",\"001\",10,\"018.000 X 096.000\",\"018.000 X 096.000\",\"G70JS0 CARRARA 2P 1/06 X 8/00\",\"\",\"NO BEVEL\",\"\",\"\",\"note4\",\"note5\",\"note6\",\"\",\"WILSON P\",235728,\"2Z7533\",00004,\"\u001bC<CR>\u001bEW----;JELDWEN.00I<CR>\u001bP1-0-045000000;A6mmB; 1/06 X 8/00 1-3/4 G70JS0 CARRARA 2P 1/06 X 8/00  JELDWEN ** XDOCK **<CR>\u001bP1-0-045000175;A4mmB;  YF060225    00004 Parent Seq:00004  175726 168034S2PS O:235728 L:2 SC<CR>\u001bL1-0-015000000;carbwarning<CR>\u001bX;#=51;g=4;e=0000000:P1-0-032500000;A4mmB;~cd/ab/gh~<CR>\u001bX;#=52;g=4;e=0000000:P1-0-040000000;A4mmB;~ij:kl:mn~<CR>\u001bEX----;<CR>\u0002TZJELDWEN.00I;13<CR>\u0003\u001bC1<CR>\",\"\",\"1-3/4 x 1/06 x 8/00\",\"G70JS0 CARRARA 2P\",\"**168034S2PS*\",\"Ln:2\",\"0235728002001YF3\""
+    }
+]
