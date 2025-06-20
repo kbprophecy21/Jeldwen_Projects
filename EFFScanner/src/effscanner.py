@@ -33,15 +33,16 @@ class EFFScanner:
                             fields = [field.strip('"') for field in fields]
                             ticket_data = {
                                 "batch_id": self.batch_id,
-                                "record_id": fields[0],
                                 "press_a": fields[1],
                                 "press_b": fields[2],
-                                "product_type": fields[3],
-                                "operator": fields[4],
                                 "quantity": fields[5],
-                                "material": fields[6],
                                 "door_size": fields[7],
+                                "door_species": fields[8],
                                 "frame_code": fields[8].strip().split()[0],
+                                "customer": fields[17],
+                                "order_number": fields[18],
+                                "item_number": fields[19],
+                                "sequence_number": fields[20],
                                 "scan_time": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
                                 "original_line": line.strip()
                             }

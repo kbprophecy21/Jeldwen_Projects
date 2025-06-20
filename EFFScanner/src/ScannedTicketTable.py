@@ -114,26 +114,26 @@ class ScannedTicketTable:
         # Treeview with extended fields
         self.tree = ttk.Treeview(
             self.frame,
-            columns=("batch_id", "frame_code", "door_size", "quantity", "product_type", "operator", "material", "scan_time"),
+            columns=("batch_id", "frame_code", "order_number", "item_number", "door_species", "quantity", "customer", "scan_time"),
             show="headings"
         )
 
-        self.tree.heading("batch_id", text="Batch ID")
-        self.tree.heading("frame_code", text="Frame Code")
-        self.tree.heading("door_size", text="Door Size")
-        self.tree.heading("quantity", text="Quantity")
-        self.tree.heading("product_type", text="Product Type")
-        self.tree.heading("operator", text="Operator")
-        self.tree.heading("material", text="Material")
+        self.tree.heading("batch_id", text="Schedule Batch")
+        self.tree.heading("frame_code", text="Sequence #")
+        self.tree.heading("order_number", text="Order #")
+        self.tree.heading("item_number", text="Item #")
+        self.tree.heading("door_species", text="Door Species")
+        self.tree.heading("quantity", text="Quanity #")
+        self.tree.heading("customer", text="Customer")
         self.tree.heading("scan_time", text="Scan Time")
 
         self.tree.column("batch_id", width=100)
         self.tree.column("frame_code", width=90)
-        self.tree.column("door_size", width=90)
-        self.tree.column("quantity", width=80)
-        self.tree.column("product_type", width=110)
-        self.tree.column("operator", width=90)
-        self.tree.column("material", width=90)
+        self.tree.column("order_number", width=90)
+        self.tree.column("item_number", width=80)
+        self.tree.column("door_species", width=110)
+        self.tree.column("quantity", width=90)
+        self.tree.column("customer", width=90)
         self.tree.column("scan_time", width=140)
 
         self.tree.pack(fill="both", expand=True)
