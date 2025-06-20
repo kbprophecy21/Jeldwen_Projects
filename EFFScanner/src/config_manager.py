@@ -7,27 +7,28 @@ CONFIG_FILE = "config.json"
 
 class ConfigManager:
     def __init__(self):
-        # Default fallback values
-        #default_data_folder = os.path.join(os.getcwd(), "Data", "lis")
-        #default_json_path = os.path.join(os.getcwd(), "Data", "eff_data.json")
-        self.default_image_path = r'C:\Users\410512\Documents\Project_Files\Jeldwen_Projects\EFFScanner\Data\img\JeldwenLogo.png'
-        self.json_save_path = r'C:\Users\410512\Documents\Project_Files\Jeldwen_Projects\EFFScanner\Data\eff_saved_data.json'
-        self.data_folder = r'C:\Users\410512\Documents\Project_Files\Jeldwen_Projects\EFFScanner\Data\LIS_Files'
+        # Always use this default image path
+        self.default_image_path = os.path.join(
+            os.getcwd(), "Data", "img", "JeldwenLogo.png"
+        )
+        # Set defaults for the other paths
+        self.json_save_path = os.path.join(
+            os.getcwd(), "Data", "eff_saved_data.json"
+        )
+        self.data_folder = os.path.join(
+            os.getcwd(), "Data", "LIS_Files"
+        )
+        self.load_config()
 
-        #load_config()
-    # """
-    # def load_config(self):
-    #     if os.path.exists(CONFIG_FILE):
-    #         with open(CONFIG_FILE, "r") as f:
-    #             config = json.load(f)
-    #             self.data_folder = config.get("data_folder", self.data_folder)
-    #             self.json_save_path = config.get("json_save_path", self.json_save_path)
-    #     else:
-    #         self.save_config()  # Create config with defaults
-    # """
-    
-   
-            
+    def load_config(self):
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, "r") as f:
+                config = json.load(f)
+                self.data_folder = config.get("data_folder", self.data_folder)
+                self.json_save_path = config.get("json_save_path", self.json_save_path)
+        else:
+            self.save_config()  # Create config with defaults
+
     def save_config(self):
         config = {
             "data_folder": self.data_folder,
@@ -45,7 +46,6 @@ class ConfigManager:
         data_folder_var = tk.StringVar(value=self.data_folder)
         json_path_var = tk.StringVar(value=self.json_save_path)
 
-        # --- Functions ---
         def choose_data_folder():
             path = filedialog.askdirectory(title="Select Data Folder (.lis files)")
             if path:
