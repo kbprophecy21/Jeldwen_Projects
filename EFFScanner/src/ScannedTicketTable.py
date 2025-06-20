@@ -131,8 +131,8 @@ class ScannedTicketTable:
         self.tree.column("frame_code", width=90)
         self.tree.column("order_number", width=90)
         self.tree.column("item_number", width=80)
-        self.tree.column("door_species", width=110)
-        self.tree.column("quantity", width=90)
+        self.tree.column("door_species", width=150)
+        self.tree.column("quantity", width=20)
         self.tree.column("customer", width=90)
         self.tree.column("scan_time", width=140)
 
