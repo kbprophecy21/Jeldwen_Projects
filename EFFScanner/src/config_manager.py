@@ -8,15 +8,17 @@ CONFIG_FILE = "config.json"
 class ConfigManager:
     def __init__(self):
         # Always use this default image path
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.abspath(os.path.join(base_dir, "..", ".."))
         self.default_image_path = os.path.join(
-            os.getcwd(), "Data", "img", "JeldwenLogo.png"
+            project_root, "Data", "img", "JeldwenLogo.png"
         )
         # Set defaults for the other paths
         self.json_save_path = os.path.join(
-            os.getcwd(), "Data", "eff_saved_data.json"
+            project_root, "Data", "eff_saved_data.json"
         )
         self.data_folder = os.path.join(
-            os.getcwd(), "Data", "LIS_Files"
+            project_root, "Data", "LIS_Files"
         )
         self.load_config()
 
