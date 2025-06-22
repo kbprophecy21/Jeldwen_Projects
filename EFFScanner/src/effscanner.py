@@ -4,7 +4,11 @@ import pandas as pd
 class EFFScanner:
     def __init__(self, folder_path, batch_id):
         self.folder_path = folder_path
-        self.batch_id = batch_id.strip()
+        
+        # Added this so the user could use uppercase or lowercase letter 
+        # and it would still find the file and ticket and remove all Special Batch ID character "SB" or "sb"
+        self.batch_id = batch_id.strip().upper().replace("SB", "")
+
 
         # Extract press info
         self.group_press = self.batch_id[-7:]
