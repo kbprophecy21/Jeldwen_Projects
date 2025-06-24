@@ -42,7 +42,7 @@ class DataManager:
             self.set_value(key, quantity)
 
         self.data["scanned_tickets"].append(ticket_dict)
-        self.data["total_count"] += quantity
+        self.data["total_count"] = max(0, self.data["total_count"] + quantity)
         self.save_data()
 
     def delete_ticket_by_data(self, ticket_to_delete):
@@ -63,7 +63,7 @@ class DataManager:
             )
         ]
 
-        self.data["total_count"] -= quantity
+        self.data["total_count"] = max(0, self.data["total_count"] - quantity)
         self.save_data()
 
     def reprocess_ticket(self, old_ticket, new_ticket):
@@ -90,7 +90,8 @@ class DataManager:
 
     def set_value(self, key, value):
         if key in self.data["category_totals"] and isinstance(value, (int, float)):
-            self.data["category_totals"][key] += value
+            new_total = self.data["category_totals"][key] + value
+            self.data["category_totals"][key] = max(0, new_total)  # Prevent negative
         else:
             raise KeyError(f"Invalid key or value type: {key}, {value}")
 

@@ -12,7 +12,7 @@ class ScannedTicketTable:
         self.on_delete_callback = on_delete_callback
         self.frame = None  
         self.tree = None
-        self.sort_recent_first = False  # Add this line
+        self.sort_recent_first = True 
 
     def refresh_table(self):
         if self.sort_recent_first:
@@ -63,6 +63,9 @@ class ScannedTicketTable:
         def save_edit(event):
             try:
                 new_quantity = int(entry.get())
+                if new_quantity < 0:
+                    messagebox.showerror("Invalid Input", "Quantity cannot be negative.")
+                    return
                 idx = int(row_id)
                 original_ticket = self.scanned_tickets[idx]
 
@@ -73,6 +76,8 @@ class ScannedTicketTable:
                 updated_ticket["quantity"] = new_quantity
 
                 self.data_manager.reprocess_ticket(original_ticket, updated_ticket)
+                
+                self.scanned_tickets = self.data_manager.get_ticket_history()
                 self.refresh_table()
 
                 if self.on_update_callback:
@@ -93,7 +98,10 @@ class ScannedTicketTable:
             ticket = self.scanned_tickets[idx]
 
             self.data_manager.delete_ticket_by_data(ticket)
+         
+            self.scanned_tickets = self.data_manager.get_ticket_history()
             self.refresh_table()
+            self.tree.selection_remove(self.tree.selection())  # Clear selection after delete
 
             if self.on_delete_callback:
                 self.on_delete_callback(ticket)
@@ -128,9 +136,9 @@ class ScannedTicketTable:
         tk.Label(header_frame, text="Previously Scanned Tickets:", bg="#1d446b", fg="white", font=("Arial", 14)).pack(side="left", padx=10, pady=10)
 
         # --- Sort Button ---
-        sort_btn_text = tk.StringVar(value="Recent at Bottom")
+        sort_btn_text = tk.StringVar(value="Filter Order")
         def update_sort_btn_text():
-            sort_btn_text.set("Recent at Top" if not self.sort_recent_first else "Recent at Bottom")
+            sort_btn_text.set("Filter Order" if not self.sort_recent_first else "Filter Order")
         def on_sort_btn_click():
             self.toggle_sort_order()
             update_sort_btn_text()
