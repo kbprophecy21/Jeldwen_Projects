@@ -33,6 +33,16 @@ class DataManager:
             print(f"Missing keys in ticket: {ticket_dict}")
             return
 
+        # Check for duplicate (same batch_id, item_number, scan_time)
+        for t in self.data["scanned_tickets"]:
+            if (
+                t.get("batch_id") == ticket_dict.get("batch_id") and
+                t.get("item_number") == ticket_dict.get("item_number") and
+                t.get("order_number") == ticket_dict.get("order_number")
+            ):
+                
+                return  
+
         quantity = int(ticket_dict["quantity"])
         frame_code = ticket_dict["frame_code"]
         door_size = ticket_dict["door_size"]

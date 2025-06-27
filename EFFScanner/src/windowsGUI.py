@@ -126,6 +126,21 @@ class EFFApp:
                 ticket["quantity"] = quantity
                 ticket["scan_time"] = datetime.now().strftime(" %H:%M:%S")
 
+                # Duplicate check here
+                is_duplicate = any(
+                    t.get("batch_id") == ticket["batch_id"] and
+                    t.get("item_number") == ticket.get("item_number") and
+                    t.get("order_number") == ticket.get("order_number")
+                    for t in self.data_manager.get_ticket_history()
+                )
+                if is_duplicate:
+                    self.status.config(
+                        text="❌ Ticket already scanned for this shift.",
+                        fg="red",
+                        font=("Arial", 20, "bold")
+                    )
+                    continue  # Skip adding this ticket
+
                 self.data_manager.add_ticket(ticket)      # save full data + categorize
                 self.scanned_tickets.append(ticket)       # used by the table GUI
 
@@ -134,9 +149,20 @@ class EFFApp:
                     updated_keys.append(f"{key} (+{quantity})")
 
             keys_str = ", ".join(updated_keys)
-            self.status.config(text=f"✅ Ticket(s) processed.\nUpdated: {keys_str}", fg="green")
+            if updated_keys:
+                self.status.config(
+                    text=f"✅ Ticket(s) processed.\nUpdated: {keys_str}",
+                    fg="green",
+                    font=("Arial", 20, "bold")
+                )
+            else:
+                self.status.config(
+                    text="❌ Ticket already scanned for this shift.",
+                    fg="red",
+                    font=("Arial", 20, "bold")
+                )
         else:
-            self.status.config(text="❌ Ticket not found.", fg="red")
+            self.status.config(text="❌ Ticket not found.", fg="red", font=("Arial", 20, "bold"))
 
         self.entry.delete(0, tk.END)
         self.entry.focus()
