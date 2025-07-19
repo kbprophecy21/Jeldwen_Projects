@@ -2,6 +2,7 @@ import os
 import json
 import tkinter as tk
 from tkinter import filedialog, messagebox
+from lis_manager import LISmanager
 
 CONFIG_FILE = "config.json"
 
@@ -23,6 +24,9 @@ class ConfigManager:
         self.data_folder = os.path.join(parent_dir, "Data", "LIS_Files")
 
         self.load_config()
+        
+        self.lis_manager = LISmanager()
+        self.lis_manager.cleanUP()
 
     def load_config(self):
         if os.path.exists(CONFIG_FILE):
