@@ -124,7 +124,22 @@ class EFFApp:
                 ticket = row.to_dict()
                 ticket["batch_id"] = batch_id
                 ticket["quantity"] = quantity
-                ticket["scan_time"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                ticket["scan_time"] = datetime.now().strftime(" %H:%M:%S")
+
+                # Duplicate check here
+                is_duplicate = any(
+                    t.get("batch_id") == ticket["batch_id"] and
+                    t.get("item_number") == ticket.get("item_number") and
+                    t.get("order_number") == ticket.get("order_number")
+                    for t in self.data_manager.get_ticket_history()
+                )
+                if is_duplicate:
+                    self.status.config(
+                        text="❌ Ticket already scanned for this shift.",
+                        fg="red",
+                        font=("Arial", 20, "bold")
+                    )
+                    continue  # Skip adding this ticket
 
                 self.data_manager.add_ticket(ticket)      # save full data + categorize
                 self.scanned_tickets.append(ticket)       # used by the table GUI
@@ -134,9 +149,20 @@ class EFFApp:
                     updated_keys.append(f"{key} (+{quantity})")
 
             keys_str = ", ".join(updated_keys)
-            self.status.config(text=f"✅ Ticket(s) processed.\nUpdated: {keys_str}", fg="green")
+            if updated_keys:
+                self.status.config(
+                    text=f"✅ Ticket(s) processed.\nUpdated: {keys_str}",
+                    fg="green",
+                    font=("Arial", 20, "bold")
+                )
+            else:
+                self.status.config(
+                    text="❌ Ticket already scanned for this shift.",
+                    fg="red",
+                    font=("Arial", 20, "bold")
+                )
         else:
-            self.status.config(text="❌ Ticket not found.", fg="red")
+            self.status.config(text="❌ Ticket not found.", fg="red", font=("Arial", 20, "bold"))
 
         self.entry.delete(0, tk.END)
         self.entry.focus()
@@ -144,24 +170,30 @@ class EFFApp:
 
 
     def reset_eff_data(self):
-        # Reset the underlying data
-        self.data_manager.reset_data()
+        confirm = messagebox.askyesno("Confirm Reset", "Are you sure you want to delete all EFF data?")
+        if not confirm:
+            return
+        try:
+      
+            self.data_manager.reset_data()
 
-        # Clear local scanned ticket list
-        self.scanned_tickets.clear()
+            self.scanned_tickets.clear()
 
-        # Refresh only if tree exists
-        if self.scannedTicketTable and self.scannedTicketTable.tree:
-            self.scannedTicketTable.refresh_table()
+            
+            if self.scannedTicketTable and self.scannedTicketTable.tree:
+                self.scannedTicketTable.refresh_table()
 
-        if self.effDataTable and self.effDataTable.tree:
-            self.effDataTable.populate_tree(self.effDataTable.tree)
+            if self.effDataTable and self.effDataTable.tree:
+                self.effDataTable.populate_tree(self.effDataTable.tree)
 
-        # Reset label if it exists
-        if hasattr(self, "total_label"):
-            self.total_label.config(text=f"Total Doors: {self.data_manager.get_total()}")
+            if hasattr(self, "total_label"):
+                self.total_label.config(text=f"Total Doors: {self.data_manager.get_total()}")
 
-    # Function to go back to the main menu and destroy the current frame
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred while resetting data:\n{e}")
+
+
+    
     def back_to_menu(self, frame_to_destroy=None):
         if frame_to_destroy:
             frame_to_destroy.destroy()

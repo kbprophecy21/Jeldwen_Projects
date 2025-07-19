@@ -33,6 +33,16 @@ class DataManager:
             print(f"Missing keys in ticket: {ticket_dict}")
             return
 
+        # Check for duplicate (same batch_id, item_number, scan_time)
+        for t in self.data["scanned_tickets"]:
+            if (
+                t.get("batch_id") == ticket_dict.get("batch_id") and
+                t.get("item_number") == ticket_dict.get("item_number") and
+                t.get("order_number") == ticket_dict.get("order_number")
+            ):
+                
+                return  
+
         quantity = int(ticket_dict["quantity"])
         frame_code = ticket_dict["frame_code"]
         door_size = ticket_dict["door_size"]
@@ -42,7 +52,7 @@ class DataManager:
             self.set_value(key, quantity)
 
         self.data["scanned_tickets"].append(ticket_dict)
-        self.data["total_count"] += quantity
+        self.data["total_count"] = max(0, self.data["total_count"] + quantity)
         self.save_data()
 
     def delete_ticket_by_data(self, ticket_to_delete):
@@ -63,7 +73,7 @@ class DataManager:
             )
         ]
 
-        self.data["total_count"] -= quantity
+        self.data["total_count"] = max(0, self.data["total_count"] - quantity)
         self.save_data()
 
     def reprocess_ticket(self, old_ticket, new_ticket):
@@ -90,7 +100,8 @@ class DataManager:
 
     def set_value(self, key, value):
         if key in self.data["category_totals"] and isinstance(value, (int, float)):
-            self.data["category_totals"][key] += value
+            new_total = self.data["category_totals"][key] + value
+            self.data["category_totals"][key] = max(0, new_total)  # Prevent negative
         else:
             raise KeyError(f"Invalid key or value type: {key}, {value}")
 
