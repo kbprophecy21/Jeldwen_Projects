@@ -1,12 +1,13 @@
 import os
 from datetime import datetime, timedelta
-from config_manager import ConfigManager
+
 
 
 class LISmanager:
     
     def __init__(self):
         
+        from config_manager import ConfigManager
         self.config = ConfigManager() 
         self.data_folder_path = self.config.data_folder
         
