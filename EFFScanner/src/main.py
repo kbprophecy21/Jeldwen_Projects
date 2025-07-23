@@ -3,10 +3,10 @@ from effscanner import EFFScanner
 from dataManager import DataManager
 from windowsGUI import EFFApp
 import tkinter as tk
-import LISmanager
+from LISmanager import LISmanager
 
 
- 
+
 
 def main():
     
